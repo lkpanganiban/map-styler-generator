@@ -1,4 +1,4 @@
-export type LayerType = 'raster' | 'vector'
+export type LayerType = 'raster' | 'vector' | 'wms' | 'wfs'
 
 export interface BaseLayer {
   id: string
@@ -14,6 +14,14 @@ export interface RasterLayer extends BaseLayer {
   crs: string
   bands: number
   dataUrl?: string
+}
+
+export interface WmsLayer extends BaseLayer {
+  type: 'wms'
+  serviceUrl: string
+  layerName: string
+  crs: string
+  extent: [number, number, number, number]
 }
 
 export interface VectorStyle {
@@ -32,4 +40,13 @@ export interface VectorLayer extends BaseLayer {
   geojsonData?: string
 }
 
-export type LayerUnion = RasterLayer | VectorLayer
+export interface WfsLayer extends BaseLayer {
+  type: 'wfs'
+  serviceUrl: string
+  typename: string
+  crs: string
+  style: VectorStyle
+  geojsonData?: string
+}
+
+export type LayerUnion = RasterLayer | VectorLayer | WmsLayer | WfsLayer

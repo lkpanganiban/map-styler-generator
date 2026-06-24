@@ -81,7 +81,7 @@ export function LayerList() {
               className="flex flex-col border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50"
             >
               <div className="flex items-center gap-2 px-3 py-2">
-                {layer.type === 'vector' && (
+                {(layer.type === 'vector' || layer.type === 'wfs') && (
                   <button
                     onClick={() => setExpandedId(expandedId === layer.id ? null : layer.id)}
                     className="text-zinc-400 hover:text-zinc-600 shrink-0"
@@ -96,10 +96,10 @@ export function LayerList() {
                 <div
                   className={clsx(
                     'w-3 h-3 rounded-sm flex-shrink-0 border',
-                    layer.type === 'raster' ? 'bg-zinc-300' : 'bg-blue-400',
+                    (layer.type === 'raster' || layer.type === 'wms') ? 'bg-zinc-300' : 'bg-blue-400',
                   )}
                   style={
-                    layer.type === 'vector'
+                    (layer.type === 'vector' || layer.type === 'wfs')
                       ? { backgroundColor: (layer as any).style?.fillColor || '#3b82f6' }
                       : undefined
                   }
@@ -140,7 +140,7 @@ export function LayerList() {
                     </span>
                   </div>
 
-                  {layer.type === 'vector' && expandedId === layer.id && (
+                  {(layer.type === 'vector' || layer.type === 'wfs') && expandedId === layer.id && (
                     <div className="space-y-1.5 pt-1 border-t border-zinc-200">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] text-zinc-400 w-8 shrink-0">Fill</span>

@@ -5,8 +5,9 @@ import { ExportMapButton } from './ExportMapButton'
 import { parseGeoTIFF } from '@/lib/gdal/parseGeotiff'
 import { parseShapefile } from '@/lib/gdal/parseShapefile'
 import { parseGeoJSON } from '@/lib/gdal/parseGeoJSON'
-import { AlertCircle, X, Upload, Plus } from 'lucide-react'
+import { AlertCircle, X, Upload, Plus, Globe } from 'lucide-react'
 import { Button } from '@/components/shared/ui/Button'
+import { AddServiceDialog } from './AddServiceDialog'
 import type OlMap from 'ol/Map'
 
 export function DataViewerPage() {
@@ -14,6 +15,7 @@ export function DataViewerPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [showServiceDialog, setShowServiceDialog] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const processFiles = useCallback(
@@ -133,6 +135,14 @@ export function DataViewerPage() {
             <Plus className="w-3.5 h-3.5" />
             Add Layer
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowServiceDialog(true)}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            Add Service
+          </Button>
           <ExportMapButton olMap={olMap} />
           <input
             ref={fileInputRef}
@@ -174,6 +184,13 @@ export function DataViewerPage() {
           )}
         </div>
       </div>
+
+      {showServiceDialog && (
+        <AddServiceDialog
+          olMap={olMap}
+          onClose={() => setShowServiceDialog(false)}
+        />
+      )}
     </div>
   )
 }

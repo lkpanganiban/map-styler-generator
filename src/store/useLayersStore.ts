@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { RasterLayer, VectorLayer, LayerUnion, VectorStyle } from '@/types/layers'
+import type { RasterLayer, VectorLayer, WmsLayer, WfsLayer, LayerUnion, VectorStyle } from '@/types/layers'
 
 let nextId = 1
 
@@ -18,6 +18,8 @@ interface LayersStore {
   layers: LayerUnion[]
   addRaster: (name: string, extent: [number, number, number, number], crs: string, bands: number, dataUrl?: string) => RasterLayer
   addVector: (name: string, crs: string, featureCount: number, geojsonData?: string) => VectorLayer
+  addWms: (name: string, serviceUrl: string, layerName: string, crs: string, extent: [number, number, number, number]) => WmsLayer
+  addWfs: (name: string, serviceUrl: string, typename: string, crs: string, geojsonData?: string) => WfsLayer
   removeLayer: (id: string) => void
   toggleVisibility: (id: string) => void
   setOpacity: (id: string, opacity: number) => void
@@ -61,6 +63,39 @@ export const useLayersStore = create<LayersStore>((set) => ({
     return layer
   },
 
+  addWms: (name, serviceUrl, layerName, crs, extent) => {
+    const layer: WmsLayer = {
+      id: makeId(),
+      name,
+      type: 'wms',
+      visible: true,
+      opacity: 1,
+      serviceUrl,
+      layerName,
+      crs,
+      extent,
+    }
+    set((s) => ({ layers: [...s.layers, layer] }))
+    return layer
+  },
+
+  addWfs: (name, serviceUrl, typename, crs, geojsonData) => {
+    const layer: WfsLayer = {
+      id: makeId(),
+      name,
+      type: 'wfs',
+      visible: true,
+      opacity: 1,
+      serviceUrl,
+      typename,
+      crs,
+      style: { ...defaultVectorStyle },
+      geojsonData,
+    }
+    set((s) => ({ layers: [...s.layers, layer] }))
+    return layer
+  },
+
   removeLayer: (id) => set((s) => ({ layers: s.layers.filter((l) => l.id !== id) })),
 
   toggleVisibility: (id) =>
@@ -76,7 +111,7 @@ export const useLayersStore = create<LayersStore>((set) => ({
   setVectorStyle: (id, style) =>
     set((s) => ({
       layers: s.layers.map((l) =>
-        l.id === id && l.type === 'vector'
+        l.id === id && (l.type === 'vector' || l.type === 'wfs')
           ? { ...l, style: { ...l.style, ...style } }
           : l,
       ),

@@ -10,6 +10,7 @@ import ImageLayer from 'ol/layer/Image'
 import VectorLayer from 'ol/layer/Vector'
 import OSM from 'ol/source/OSM'
 import Static from 'ol/source/ImageStatic'
+import ImageWMS from 'ol/source/ImageWMS'
 import VectorSource from 'ol/source/Vector'
 import GeoJSONFormat from 'ol/format/GeoJSON'
 import Projection from 'ol/proj/Projection'
@@ -149,6 +150,60 @@ export function MapFrameElement({ element, scale }: MapFrameProps) {
         } catch {
           // skip malformed data
         }
+      } else if (layer.type === 'wms') {
+        try {
+          const source = new ImageWMS({
+            url: layer.serviceUrl,
+            params: {
+              LAYERS: layer.layerName,
+              VERSION: '1.3.0',
+              FORMAT: 'image/png',
+              TRANSPARENT: true,
+            },
+            projection: 'EPSG:3857',
+            crossOrigin: 'anonymous',
+            ratio: 1,
+          })
+
+          const imgLayer = new ImageLayer({
+            source,
+            properties: { gisId: layer.id },
+            opacity: layer.opacity,
+          })
+
+          map.addLayer(imgLayer)
+        } catch { /* skip */ }
+      } else if (layer.type === 'wfs' && layer.geojsonData) {
+        try {
+          const geojson = JSON.parse(layer.geojsonData)
+          const format = new GeoJSONFormat({
+            dataProjection: layer.crs,
+            featureProjection: 'EPSG:3857',
+          })
+          const features = format.readFeatures(geojson)
+
+          if (features.length > 0) {
+            const source = new VectorSource({ features })
+            const vecLayer = new VectorLayer({
+              source,
+              properties: { gisId: layer.id },
+              opacity: layer.opacity,
+              style: {
+                'fill-color': layer.style.fillColor,
+                'stroke-color': layer.style.strokeColor,
+                'stroke-width': layer.style.strokeWidth,
+                'circle-radius': layer.style.pointRadius,
+              } as any,
+            })
+
+            map.addLayer(vecLayer)
+
+            const srcExtent = source.getExtent()
+            if (srcExtent) {
+              combinedExtent = extendExtent(combinedExtent, srcExtent as [number, number, number, number])
+            }
+          }
+        } catch { /* skip */ }
       }
     }
 
@@ -166,16 +221,57 @@ export function MapFrameElement({ element, scale }: MapFrameProps) {
     containerRef.current.style.width = `${mapSize}px`
     containerRef.current.style.height = `${mapSize}px`
 
-    map.once('rendercomplete', () => {
+    const allLayers = map.getLayers().getArray()
+    const wmsSources: any[] = []
+
+    for (const l of allLayers) {
+      const gisId = l.get('gisId')
+      if (!gisId) continue
+      try {
+        const src = (l as any).getSource?.()
+        if (src && src instanceof ImageWMS) {
+          wmsSources.push(src)
+        }
+      } catch { /* skip */ }
+    }
+
+    const capture = () => {
       const container = containerRef.current
       if (!container) return
       const canvas = container.querySelector('canvas')
       if (canvas) {
-        setImage(canvas.toDataURL())
+        try {
+          setImage(canvas.toDataURL())
+        } catch {
+          // tainted canvas — WMS server may not support CORS
+          setImage(null)
+        }
       }
-    })
+    }
 
-    map.renderSync()
+    if (wmsSources.length > 0) {
+      let loaded = 0
+      const onLoad = () => {
+        loaded++
+        if (loaded >= wmsSources.length) {
+          map.renderSync()
+          map.once('rendercomplete', capture)
+          // cleanup listeners
+          for (const src of wmsSources) {
+            src.un('imageloadend', onLoad)
+            src.un('imageloaderror', onLoad)
+          }
+        }
+      }
+      for (const src of wmsSources) {
+        src.once('imageloadend', onLoad)
+        src.once('imageloaderror', onLoad)
+      }
+      map.renderSync()
+    } else {
+      map.once('rendercomplete', capture)
+      map.renderSync()
+    }
   }, [w, h, layers, element.extent])
 
   const handleDragEnd = (e: any) => {
