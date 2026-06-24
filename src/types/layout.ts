@@ -7,7 +7,7 @@ export interface GridConfig {
   lineColor: string
   lineWidth: number
   lineStyle: 'solid' | 'dashed'
-  labelPosition: 'inside' | 'outside'
+  labelPosition: 'none' | 'inside' | 'outside'
   labelFontSize: number
   labelFormat: 'decimal' | 'dms'
   labelColor: string

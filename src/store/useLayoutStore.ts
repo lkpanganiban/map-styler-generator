@@ -29,12 +29,12 @@ const DEFAULT_PAGE: PageConfig = {
 
 const DEFAULT_GRID: GridConfig = {
   enabled: false,
-  spacingX: 1,
-  spacingY: 1,
+  spacingX: 10,
+  spacingY: 10,
   lineColor: '#d4d4d8',
   lineWidth: 0.5,
   lineStyle: 'solid',
-  labelPosition: 'outside',
+  labelPosition: 'none',
   labelFontSize: 8,
   labelFormat: 'decimal',
   labelColor: '#52525b',

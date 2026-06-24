@@ -69,7 +69,84 @@ export function PropertiesPanel() {
 
   const renderKindProps = () => {
     const el = selected as any
-    switch (selected.kind) {
+      switch (selected.kind) {
+      case 'mapframe':
+        return (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <Input
+                label="Grid X (mm)"
+                type="number"
+                value={el.gridConfig.spacingX}
+                onChange={(e) =>
+                  updateElement(selected.id, {
+                    gridConfig: { ...el.gridConfig, spacingX: Math.max(1, Number(e.target.value) || 1) },
+                  } as any)
+                }
+                min={1}
+              />
+              <Input
+                label="Grid Y (mm)"
+                type="number"
+                value={el.gridConfig.spacingY}
+                onChange={(e) =>
+                  updateElement(selected.id, {
+                    gridConfig: { ...el.gridConfig, spacingY: Math.max(1, Number(e.target.value) || 1) },
+                  } as any)
+                }
+                min={1}
+              />
+            </div>
+            <Select
+              label="Line style"
+              options={[
+                { value: 'solid', label: 'Solid' },
+                { value: 'dashed', label: 'Dashed' },
+              ]}
+              value={el.gridConfig.lineStyle}
+              onChange={(v) =>
+                updateElement(selected.id, {
+                  gridConfig: { ...el.gridConfig, lineStyle: v },
+                } as any)
+              }
+            />
+            <ColorInput
+              label="Line color"
+              value={el.gridConfig.lineColor}
+              onChange={(v) =>
+                updateElement(selected.id, {
+                  gridConfig: { ...el.gridConfig, lineColor: v },
+                } as any)
+              }
+            />
+            <Input
+              label="Line width"
+              type="number"
+              value={el.gridConfig.lineWidth}
+              onChange={(e) =>
+                updateElement(selected.id, {
+                  gridConfig: { ...el.gridConfig, lineWidth: Math.max(0.1, Number(e.target.value) || 0.5) },
+                } as any)
+              }
+              step={0.1}
+              min={0.1}
+            />
+            <Select
+              label="Label position"
+              options={[
+                { value: 'none', label: 'None' },
+                { value: 'inside', label: 'Inside' },
+                { value: 'outside', label: 'Outside' },
+              ]}
+              value={el.gridConfig.labelPosition}
+              onChange={(v) =>
+                updateElement(selected.id, {
+                  gridConfig: { ...el.gridConfig, labelPosition: v },
+                } as any)
+              }
+            />
+          </div>
+        )
       case 'northarrow':
         return (
           <div className="flex flex-col gap-3">

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Group, Rect, Image as KonvaImage } from 'react-konva'
+import { Group, Rect, Image as KonvaImage, Line, Text as KonvaText } from 'react-konva'
 import type { MapFrameElement as MapFrameType } from '@/types/layout'
 import { useLayoutStore } from '@/store/useLayoutStore'
 import { useLayersStore } from '@/store/useLayersStore'
@@ -323,6 +323,7 @@ export function MapFrameElement({ element, scale }: MapFrameProps) {
           height={h}
         />
       )}
+      {element.gridConfig.enabled && renderGrid(element, w, h)}
       <Rect
         width={w}
         height={h}
@@ -346,4 +347,64 @@ function extendExtent(
     Math.max(current[2], ext[2]),
     Math.max(current[3], ext[3]),
   ]
+}
+
+function renderGrid(
+  element: MapFrameType,
+  w: number,
+  h: number,
+) {
+  const gc = element.gridConfig
+  if (!gc.enabled) return null
+
+  const scaleFactor = w / element.width
+  const spacingPx = gc.spacingX * scaleFactor
+  const numLinesX = Math.ceil(w / spacingPx)
+  const numLinesY = Math.ceil(h / spacingPx)
+  const dash = gc.lineStyle === 'dashed' ? [4, 4] : undefined
+  const lines: React.ReactNode[] = []
+
+  for (let i = 1; i < numLinesX; i++) {
+    lines.push(
+      <Line
+        key={`v-${i}`}
+        points={[i * spacingPx, 0, i * spacingPx, h]}
+        stroke={gc.lineColor}
+        strokeWidth={gc.lineWidth}
+        dash={dash}
+      />,
+    )
+  }
+
+  for (let i = 1; i < numLinesY; i++) {
+    lines.push(
+      <Line
+        key={`h-${i}`}
+        points={[0, i * spacingPx, w, i * spacingPx]}
+        stroke={gc.lineColor}
+        strokeWidth={gc.lineWidth}
+        dash={dash}
+      />,
+    )
+  }
+
+  if (gc.labelPosition !== 'none') {
+    const fontSize = gc.labelFontSize * 2
+    const yPos = gc.labelPosition === 'outside' ? -fontSize - 2 : h - fontSize - 2
+
+    for (let i = 0; i < numLinesX; i++) {
+      lines.push(
+        <KonvaText
+          key={`lv-${i}`}
+          x={i * spacingPx + 3}
+          y={yPos}
+          text={`${Math.round(i * gc.spacingX)}`}
+          fontSize={fontSize}
+          fill={gc.labelColor}
+        />,
+      )
+    }
+  }
+
+  return <>{lines}</>
 }

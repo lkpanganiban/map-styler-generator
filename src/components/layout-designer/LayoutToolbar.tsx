@@ -11,13 +11,24 @@ import {
   BookOpen,
   Type,
   Image,
+  Grid3X3,
   Undo,
   Redo,
   Trash2,
 } from 'lucide-react'
 
 export function LayoutToolbar() {
-  const { addElement, undo, redo, removeSelected, undoStack, redoStack, selectedId, elements } = useLayoutStore()
+  const { addElement, undo, redo, removeSelected, undoStack, redoStack, selectedId, elements, updateElement } = useLayoutStore()
+
+  const mapFrame = elements.find((e): e is any => e.kind === 'mapframe')
+  const gridEnabled = mapFrame?.gridConfig?.enabled ?? false
+
+  const toggleGrid = () => {
+    if (!mapFrame) return
+    updateElement(mapFrame.id, {
+      gridConfig: { ...mapFrame.gridConfig, enabled: !mapFrame.gridConfig.enabled },
+    } as any)
+  }
 
   const handleAddLogo = () => {
     const input = document.createElement('input')
@@ -77,6 +88,15 @@ export function LayoutToolbar() {
         <Image className="w-5 h-5" />
       </ToolbarButton>
 
+      <ToolbarButton
+        tooltip={gridEnabled ? 'Hide Grid' : 'Show Grid'}
+        disabled={!mapFrame}
+        active={gridEnabled}
+        onClick={toggleGrid}
+      >
+        <Grid3X3 className="w-5 h-5" />
+      </ToolbarButton>
+
       <div className="border-t border-zinc-200 my-1 w-8" />
 
       <ToolbarButton
@@ -110,11 +130,13 @@ function ToolbarButton({
   children,
   tooltip,
   disabled,
+  active,
   onClick,
 }: {
   children: React.ReactNode
   tooltip: string
   disabled?: boolean
+  active?: boolean
   onClick: () => void
 }) {
   return (
@@ -122,7 +144,11 @@ function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={tooltip}
-      className="w-10 h-10 flex items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 disabled:opacity-30 disabled:cursor-default transition-colors"
+      className={`w-10 h-10 flex items-center justify-center rounded-md transition-colors ${
+        active
+          ? 'text-zinc-800 bg-zinc-200'
+          : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
+      } disabled:opacity-30 disabled:cursor-default`}
     >
       {children}
     </button>
