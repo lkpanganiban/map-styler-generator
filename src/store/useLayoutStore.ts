@@ -10,6 +10,7 @@ import type {
   ScaleBarElement,
   LegendElement,
   TextElement,
+  TechnicalDescriptionElement,
 } from '@/types/layout'
 import { PAPER_SIZES_MM, getPageDimensions } from '@/types/layout'
 
@@ -236,5 +237,33 @@ export function createTextElement(text: string): TextElement {
     backgroundColor: 'transparent',
     borderColor: 'transparent',
     borderWidth: 0,
+  }
+}
+
+export function createTechnicalDescription(): TechnicalDescriptionElement {
+  const id = makeElementId()
+  return {
+    id,
+    kind: 'techdesc',
+    x: 30,
+    y: 190,
+    width: 160,
+    height: 80,
+    rotation: 0,
+    zIndex: 15,
+    config: {
+      title: 'Technical Description',
+      fontFamily: 'Inter, sans-serif',
+      fontSize: 10,
+      fontColor: '#18181b',
+      labelColor: '#52525b',
+      valueColor: '#18181b',
+      columns: 1,
+      items: [
+        { label: 'CRS', value: 'WGS 84 / Pseudo-Mercator', visible: true },
+        { label: 'Scale', value: '1:50,000', visible: true },
+        { label: 'Date', value: new Date().toISOString().slice(0, 10), visible: true },
+      ],
+    },
   }
 }

@@ -5,13 +5,14 @@ import type { LogoElement } from '@/types/layout'
 
 interface Props {
   element: LogoElement
+  scale: number
+  onTransformEnd: (e: any) => void
 }
 
-export function LogoElement({ element }: Props) {
+export function LogoElement({ element, scale, onTransformEnd }: Props) {
   const { selectedId, selectElement, updateElement } = useLayoutStore()
   const isSelected = selectedId === element.id
   const [img, setImg] = useState<HTMLImageElement | null>(null)
-  const scale = 2
 
   useEffect(() => {
     const image = new window.Image()
@@ -34,10 +35,15 @@ export function LogoElement({ element }: Props) {
 
   return (
     <Group
+      id={element.id}
       x={x}
       y={y}
+      width={w}
+      height={h}
+      rotation={element.rotation || 0}
       draggable
       onDragEnd={handleDragEnd}
+      onTransformEnd={onTransformEnd}
       onClick={() => selectElement(element.id)}
       onTap={() => selectElement(element.id)}
     >

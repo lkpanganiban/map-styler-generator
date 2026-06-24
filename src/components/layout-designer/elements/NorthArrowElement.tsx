@@ -5,14 +5,17 @@ import type { NorthArrowElement } from '@/types/layout'
 
 interface Props {
   element: NorthArrowElement
+  scale: number
+  onTransformEnd: (e: any) => void
 }
 
-export function NorthArrowElement({ element }: Props) {
+export function NorthArrowElement({ element, scale, onTransformEnd }: Props) {
   const { selectedId, selectElement, updateElement } = useLayoutStore()
   const isSelected = selectedId === element.id
-  const scale = 2
 
   const pathData = northArrowPresets[element.preset] || northArrowPresets.arrow1
+  const w = element.width * scale
+  const h = element.height * scale
 
   const handleDragEnd = (e: any) => {
     updateElement(element.id, {
@@ -23,23 +26,27 @@ export function NorthArrowElement({ element }: Props) {
 
   return (
     <Group
+      id={element.id}
       x={element.x * scale}
       y={element.y * scale}
+      width={w}
+      height={h}
+      rotation={element.rotation || 0}
       draggable
       onDragEnd={handleDragEnd}
+      onTransformEnd={onTransformEnd}
       onClick={() => selectElement(element.id)}
       onTap={() => selectElement(element.id)}
-      rotation={element.rotation || 0}
     >
       <Path
         data={pathData}
         fill={element.fillColor}
         stroke={element.strokeColor}
         strokeWidth={1}
-        width={element.width * scale}
-        height={element.height * scale}
-        scaleX={(element.width * scale) / 20}
-        scaleY={(element.height * scale) / 32}
+        width={w}
+        height={h}
+        scaleX={w / 20}
+        scaleY={h / 32}
       />
       {isSelected && (
         <Path
@@ -47,10 +54,10 @@ export function NorthArrowElement({ element }: Props) {
           fill="transparent"
           stroke="#52525b"
           strokeWidth={2}
-          width={element.width * scale}
-          height={element.height * scale}
-          scaleX={(element.width * scale) / 20}
-          scaleY={(element.height * scale) / 32}
+          width={w}
+          height={h}
+          scaleX={w / 20}
+          scaleY={h / 32}
         />
       )}
     </Group>

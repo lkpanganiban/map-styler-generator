@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { LayoutCanvas } from './LayoutCanvas'
 import { LayoutToolbar } from './LayoutToolbar'
+import { ElementsList } from './ElementsList'
 import { PropertiesPanel } from './PropertiesPanel'
 import { PageSetupBar } from './PageSetupBar'
 import { ExportDialog } from './ExportDialog'
@@ -12,7 +13,23 @@ export function LayoutDesignerPage() {
   const navigate = useNavigate()
   const [showExport, setShowExport] = useState(false)
   const [mapImage, setMapImage] = useState<string | null>(null)
+  const [panelOpen, setPanelOpen] = useState(true)
+  const [elementsPanelOpen, setElementsPanelOpen] = useState(true)
+  const [canvasWidth, setCanvasWidth] = useState(0)
   const stageRef = useRef<any>(null)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = canvasContainerRef.current
+    if (!container) return
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setCanvasWidth(entry.contentRect.width)
+      }
+    })
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [])
 
   const handleBack = () => {
     navigate('/')
@@ -47,13 +64,20 @@ export function LayoutDesignerPage() {
       <PageSetupBar />
 
       <div className="flex-1 flex min-h-0">
-        <LayoutToolbar />
+        <LayoutToolbar
+          panelOpen={panelOpen}
+          onTogglePanel={() => setPanelOpen(!panelOpen)}
+          elementsPanelOpen={elementsPanelOpen}
+          onToggleElementsPanel={() => setElementsPanelOpen(!elementsPanelOpen)}
+        />
 
-        <div className="flex-1 bg-zinc-100 overflow-auto p-4">
-          <LayoutCanvas stageRef={stageRef} />
+        {elementsPanelOpen && <ElementsList />}
+
+        <div ref={canvasContainerRef} className="flex-1 bg-zinc-100 overflow-y-auto overflow-x-clip p-4 min-w-0">
+          <LayoutCanvas stageRef={stageRef} availableWidth={canvasWidth} />
         </div>
 
-        <PropertiesPanel />
+        {panelOpen && <PropertiesPanel />}
       </div>
 
       {showExport && (

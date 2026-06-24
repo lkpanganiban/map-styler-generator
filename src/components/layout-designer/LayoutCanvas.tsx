@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { Stage, Layer, Rect } from 'react-konva'
+import { useEffect, useRef, useCallback } from 'react'
+import { Stage, Layer, Rect, Transformer } from 'react-konva'
 import { useLayoutStore } from '@/store/useLayoutStore'
 import { PAPER_SIZES_MM, getPageDimensions } from '@/types/layout'
 import type { LayoutElement } from '@/types/layout'
@@ -9,14 +9,17 @@ import { ScaleBarElementRenderer } from './elements/ScaleBarElement'
 import { LegendElementRenderer } from './elements/LegendElement'
 import { LogoElement } from './elements/LogoElement'
 import { TextElementRenderer } from './elements/TextElement'
+import { TechnicalDescriptionElementRenderer } from './elements/TechnicalDescriptionElement'
 
 interface LayoutCanvasProps {
   stageRef: React.MutableRefObject<any>
+  availableWidth: number
 }
 
-export function LayoutCanvas({ stageRef }: LayoutCanvasProps) {
+export function LayoutCanvas({ stageRef, availableWidth }: LayoutCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { elements, pageConfig, selectElement } = useLayoutStore()
+  const transformerRef = useRef<any>(null)
+  const { elements, pageConfig, selectElement, selectedId, updateElement } = useLayoutStore()
 
   const dims = getPageDimensions(
     PAPER_SIZES_MM[pageConfig.paperSize],
@@ -26,24 +29,80 @@ export function LayoutCanvas({ stageRef }: LayoutCanvasProps) {
   const pageW = dims.widthMm
   const pageH = dims.heightMm
 
-  const scale = 2
+  const PADDING = 40
+  const maxScale = 2
+  const minScale = 0.5
+
+  const scale = availableWidth > 0
+    ? Math.max(minScale, Math.min(maxScale, (availableWidth - PADDING) / pageW))
+    : maxScale
+
   const canvasW = pageW * scale
   const canvasH = pageH * scale
+
+  const handleTransformEnd = useCallback((e: any) => {
+    const node = e.target
+    const elementId = node.id()
+    if (!elementId) return
+
+    const element = elements.find((el) => el.id === elementId)
+    if (!element) return
+
+    const sx = node.scaleX()
+    const sy = node.scaleY()
+    node.scaleX(1)
+    node.scaleY(1)
+
+    updateElement(elementId, {
+      x: node.x() / scale,
+      y: node.y() / scale,
+      width: Math.max(5, node.width() * sx) / scale,
+      height: Math.max(5, node.height() * sy) / scale,
+      rotation: node.rotation(),
+    } as any)
+  }, [elements, scale, updateElement])
+
+  useEffect(() => {
+    if (!transformerRef.current) return
+    const stage = transformerRef.current.getStage()
+    if (!stage) return
+
+    if (selectedId) {
+      const node = stage.findOne(`#${selectedId}`)
+      if (node) {
+        transformerRef.current.nodes([node])
+        transformerRef.current.getLayer()?.batchDraw()
+        return
+      }
+    }
+    transformerRef.current.nodes([])
+    transformerRef.current.getLayer()?.batchDraw()
+  }, [selectedId])
+
+  const getTransformerConfig = () => {
+    const el = elements.find((e) => e.id === selectedId)
+    if (el?.kind === 'logo' && (el as any).lockedAspect) {
+      return { keepRatio: true }
+    }
+    return {}
+  }
 
   const renderElement = (el: LayoutElement) => {
     switch (el.kind) {
       case 'mapframe':
-        return <MapFrameElement key={el.id} element={el} scale={scale} />
+        return <MapFrameElement key={el.id} element={el} scale={scale} onTransformEnd={handleTransformEnd} />
       case 'northarrow':
-        return <NorthArrowElement key={el.id} element={el} />
+        return <NorthArrowElement key={el.id} element={el} scale={scale} onTransformEnd={handleTransformEnd} />
       case 'scalebar':
-        return <ScaleBarElementRenderer key={el.id} element={el} />
+        return <ScaleBarElementRenderer key={el.id} element={el} scale={scale} onTransformEnd={handleTransformEnd} />
       case 'legend':
-        return <LegendElementRenderer key={el.id} element={el} />
+        return <LegendElementRenderer key={el.id} element={el} scale={scale} onTransformEnd={handleTransformEnd} />
       case 'logo':
-        return <LogoElement key={el.id} element={el} />
+        return <LogoElement key={el.id} element={el} scale={scale} onTransformEnd={handleTransformEnd} />
       case 'text':
-        return <TextElementRenderer key={el.id} element={el} />
+        return <TextElementRenderer key={el.id} element={el} scale={scale} onTransformEnd={handleTransformEnd} />
+      case 'techdesc':
+        return <TechnicalDescriptionElementRenderer key={el.id} element={el} scale={scale} onTransformEnd={handleTransformEnd} />
       default:
         return null
     }
@@ -56,7 +115,7 @@ export function LayoutCanvas({ stageRef }: LayoutCanvasProps) {
   }
 
   return (
-    <div ref={containerRef} className="flex items-center justify-center">
+    <div ref={containerRef} className="flex items-center justify-center min-h-0">
       <Stage
         ref={stageRef}
         width={canvasW}
@@ -88,6 +147,16 @@ export function LayoutCanvas({ stageRef }: LayoutCanvasProps) {
           />
 
           {elements.map(renderElement)}
+          {selectedId && (
+            <Transformer
+              ref={transformerRef}
+              boundBoxFunc={(oldBox, newBox) => {
+                if (newBox.width < 10 || newBox.height < 10) return oldBox
+                return newBox
+              }}
+              {...getTransformerConfig()}
+            />
+          )}
         </Layer>
       </Stage>
     </div>

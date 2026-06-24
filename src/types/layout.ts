@@ -1,4 +1,4 @@
-export type ElementKind = 'mapframe' | 'northarrow' | 'scalebar' | 'legend' | 'logo' | 'text'
+export type ElementKind = 'mapframe' | 'northarrow' | 'scalebar' | 'legend' | 'logo' | 'text' | 'techdesc'
 
 export interface GridConfig {
   enabled: boolean
@@ -80,6 +80,28 @@ export interface LegendElement extends BaseElement {
   config: LegendConfig
 }
 
+export interface TechnicalDescriptionItem {
+  label: string
+  value: string
+  visible: boolean
+}
+
+export interface TechnicalDescriptionConfig {
+  title: string
+  fontFamily: string
+  fontSize: number
+  fontColor: string
+  labelColor: string
+  valueColor: string
+  columns: number
+  items: TechnicalDescriptionItem[]
+}
+
+export interface TechnicalDescriptionElement extends BaseElement {
+  kind: 'techdesc'
+  config: TechnicalDescriptionConfig
+}
+
 export interface LogoElement extends BaseElement {
   kind: 'logo'
   imageDataUrl: string
@@ -105,6 +127,7 @@ export type LayoutElement =
   | NorthArrowElement
   | ScaleBarElement
   | LegendElement
+  | TechnicalDescriptionElement
   | LogoElement
   | TextElement
 

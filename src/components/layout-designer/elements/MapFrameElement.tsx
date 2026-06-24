@@ -23,9 +23,10 @@ register(proj4)
 interface MapFrameProps {
   element: MapFrameType
   scale: number
+  onTransformEnd: (e: any) => void
 }
 
-export function MapFrameElement({ element, scale }: MapFrameProps) {
+export function MapFrameElement({ element, scale, onTransformEnd }: MapFrameProps) {
   const { selectedId, selectElement, updateElement } = useLayoutStore()
   const layers = useLayersStore((s) => s.layers)
   const isSelected = selectedId === element.id
@@ -281,27 +282,17 @@ export function MapFrameElement({ element, scale }: MapFrameProps) {
     } as any)
   }
 
-  const handleTransformEnd = (e: any) => {
-    const node = e.target
-    const sx = node.scaleX()
-    const sy = node.scaleY()
-    node.scaleX(1)
-    node.scaleY(1)
-    updateElement(element.id, {
-      x: node.x() / scale,
-      y: node.y() / scale,
-      width: Math.max(5, node.width() * sx) / scale,
-      height: Math.max(5, node.height() * sy) / scale,
-    } as any)
-  }
-
   return (
     <Group
+      id={element.id}
       x={x}
       y={y}
+      width={w}
+      height={h}
+      rotation={element.rotation || 0}
       draggable
       onDragEnd={handleDragEnd}
-      onTransformEnd={handleTransformEnd}
+      onTransformEnd={onTransformEnd}
       onClick={() => selectElement(element.id)}
       onTap={() => selectElement(element.id)}
     >

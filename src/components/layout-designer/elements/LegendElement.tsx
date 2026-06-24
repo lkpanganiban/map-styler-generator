@@ -5,13 +5,14 @@ import type { LegendElement } from '@/types/layout'
 
 interface Props {
   element: LegendElement
+  scale: number
+  onTransformEnd: (e: any) => void
 }
 
-export function LegendElementRenderer({ element }: Props) {
+export function LegendElementRenderer({ element, scale, onTransformEnd }: Props) {
   const { selectedId, selectElement, updateElement } = useLayoutStore()
   const layers = useLayersStore((s) => s.layers)
   const isSelected = selectedId === element.id
-  const scale = 2
 
   const x = element.x * scale
   const y = element.y * scale
@@ -32,10 +33,15 @@ export function LegendElementRenderer({ element }: Props) {
 
   return (
     <Group
+      id={element.id}
       x={x}
       y={y}
+      width={w}
+      height={Math.max(totalH, 10)}
+      rotation={element.rotation || 0}
       draggable
       onDragEnd={handleDragEnd}
+      onTransformEnd={onTransformEnd}
       onClick={() => selectElement(element.id)}
       onTap={() => selectElement(element.id)}
     >

@@ -4,12 +4,13 @@ import type { TextElement } from '@/types/layout'
 
 interface Props {
   element: TextElement
+  scale: number
+  onTransformEnd: (e: any) => void
 }
 
-export function TextElementRenderer({ element }: Props) {
+export function TextElementRenderer({ element, scale, onTransformEnd }: Props) {
   const { selectedId, selectElement, updateElement } = useLayoutStore()
   const isSelected = selectedId === element.id
-  const scale = 2
 
   const x = element.x * scale
   const y = element.y * scale
@@ -25,10 +26,15 @@ export function TextElementRenderer({ element }: Props) {
 
   return (
     <Group
+      id={element.id}
       x={x}
       y={y}
+      width={w}
+      height={h}
+      rotation={element.rotation || 0}
       draggable
       onDragEnd={handleDragEnd}
+      onTransformEnd={onTransformEnd}
       onClick={() => selectElement(element.id)}
       onTap={() => selectElement(element.id)}
     >

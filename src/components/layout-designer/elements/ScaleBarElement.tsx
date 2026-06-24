@@ -4,16 +4,16 @@ import type { ScaleBarElement, MapFrameElement } from '@/types/layout'
 
 interface Props {
   element: ScaleBarElement
+  scale: number
+  onTransformEnd: (e: any) => void
 }
 
-export function ScaleBarElementRenderer({ element }: Props) {
+export function ScaleBarElementRenderer({ element, scale, onTransformEnd }: Props) {
   const { selectedId, selectElement, updateElement, elements } = useLayoutStore()
   const isSelected = selectedId === element.id
-  const pageScale = 2
 
   const segs = element.config.segments
 
-  // Compute real-world distances from the linked map frame
   const mapFrame = elements.find(
     (el): el is MapFrameElement => el.kind === 'mapframe',
   )
@@ -24,25 +24,30 @@ export function ScaleBarElementRenderer({ element }: Props) {
     segs,
   )
 
-  const x = element.x * pageScale
-  const y = element.y * pageScale
-  const w = element.width * pageScale
-  const h = element.height * pageScale
+  const x = element.x * scale
+  const y = element.y * scale
+  const w = element.width * scale
+  const h = element.height * scale
   const segmentWidth = w / segs
 
   const handleDragEnd = (e: any) => {
     updateElement(element.id, {
-      x: e.target.x() / pageScale,
-      y: e.target.y() / pageScale,
+      x: e.target.x() / scale,
+      y: e.target.y() / scale,
     } as any)
   }
 
   return (
     <Group
+      id={element.id}
       x={x}
       y={y}
+      width={w}
+      height={h}
+      rotation={element.rotation || 0}
       draggable
       onDragEnd={handleDragEnd}
+      onTransformEnd={onTransformEnd}
       onClick={() => selectElement(element.id)}
       onTap={() => selectElement(element.id)}
     >

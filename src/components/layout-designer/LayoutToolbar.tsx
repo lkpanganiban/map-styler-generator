@@ -4,6 +4,7 @@ import {
   createScaleBar,
   createLegend,
   createTextElement,
+  createTechnicalDescription,
 } from '@/store/useLayoutStore'
 import {
   Compass,
@@ -15,9 +16,24 @@ import {
   Undo,
   Redo,
   Trash2,
+  FileText,
+  PanelRightOpen,
+  PanelRightClose,
+  PanelLeftOpen,
+  PanelLeftClose,
 } from 'lucide-react'
 
-export function LayoutToolbar() {
+export function LayoutToolbar({
+  panelOpen,
+  onTogglePanel,
+  elementsPanelOpen,
+  onToggleElementsPanel,
+}: {
+  panelOpen: boolean
+  onTogglePanel: () => void
+  elementsPanelOpen: boolean
+  onToggleElementsPanel: () => void
+}) {
   const { addElement, undo, redo, removeSelected, undoStack, redoStack, selectedId, elements, updateElement } = useLayoutStore()
 
   const mapFrame = elements.find((e): e is any => e.kind === 'mapframe')
@@ -84,6 +100,10 @@ export function LayoutToolbar() {
         <Type className="w-5 h-5" />
       </ToolbarButton>
 
+      <ToolbarButton tooltip="Technical Description" onClick={() => addElement(createTechnicalDescription())}>
+        <FileText className="w-5 h-5" />
+      </ToolbarButton>
+
       <ToolbarButton tooltip="Logo" onClick={handleAddLogo}>
         <Image className="w-5 h-5" />
       </ToolbarButton>
@@ -121,6 +141,22 @@ export function LayoutToolbar() {
         onClick={redo}
       >
         <Redo className="w-4 h-4" />
+      </ToolbarButton>
+
+      <div className="border-t border-zinc-200 my-1 w-8" />
+
+      <ToolbarButton
+        tooltip={elementsPanelOpen ? 'Close elements list' : 'Open elements list'}
+        onClick={onToggleElementsPanel}
+      >
+        {elementsPanelOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
+      </ToolbarButton>
+
+      <ToolbarButton
+        tooltip={panelOpen ? 'Close panel' : 'Open panel'}
+        onClick={onTogglePanel}
+      >
+        {panelOpen ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
       </ToolbarButton>
     </div>
   )
