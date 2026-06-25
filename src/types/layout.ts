@@ -80,21 +80,14 @@ export interface LegendElement extends BaseElement {
   config: LegendConfig
 }
 
-export interface TechnicalDescriptionItem {
-  label: string
-  value: string
-  visible: boolean
-}
-
 export interface TechnicalDescriptionConfig {
   title: string
   fontFamily: string
   fontSize: number
   fontColor: string
-  labelColor: string
-  valueColor: string
-  columns: number
-  items: TechnicalDescriptionItem[]
+  borderColor: string
+  borderWidth: number
+  rows: string[][]
 }
 
 export interface TechnicalDescriptionElement extends BaseElement {

@@ -1,4 +1,4 @@
-import { Group, Rect, Text } from 'react-konva'
+import { Group, Rect, Text, Line } from 'react-konva'
 import { useLayoutStore } from '@/store/useLayoutStore'
 import type { TechnicalDescriptionElement } from '@/types/layout'
 
@@ -16,20 +16,20 @@ export function TechnicalDescriptionElementRenderer({ element, scale, onTransfor
   const y = element.y * scale
   const config = element.config
 
-  const visibleItems = config.items.filter((item) => item.visible)
-  const columns = Math.max(1, config.columns)
-  const rowH = 16
-  const titleH = config.title ? 20 : 0
   const padding = 4
-  const columnGap = 12
-  const itemsPerColumn = Math.ceil(visibleItems.length / columns)
-  const rowsPerColumn = Math.max(1, itemsPerColumn)
-  const renderedH = titleH + rowsPerColumn * rowH + padding * 2
-  const labelWidth = 50
+  const titleH = config.title ? 20 : 0
+  const rowH = Math.max(config.fontSize + 6, 12)
 
-  const columnWidth = (element.width * scale - padding * 2 - columnGap * (columns - 1)) / columns
+  const rows = config.rows.length > 0 ? config.rows : [[]]
+  const colCount = Math.max(1, ...rows.map((r) => r.length))
+
+  const tableW = Math.max(0, element.width * scale - padding * 2)
+  const colW = colCount > 0 ? tableW / colCount : tableW
+  const renderedH = titleH + rows.length * rowH + padding * 2
   const w = element.width * scale
   const h = Math.max(renderedH, element.height * scale)
+
+  const tableTop = titleH + padding
 
   const handleDragEnd = (e: any) => {
     updateElement(element.id, {
@@ -38,7 +38,23 @@ export function TechnicalDescriptionElementRenderer({ element, scale, onTransfor
     } as any)
   }
 
-  const items = visibleItems
+  const paddedRows = rows.map((row) => {
+    const cells = [...row]
+    while (cells.length < colCount) cells.push('')
+    return cells
+  })
+
+  const verticalLines: number[][] = []
+  for (let c = 0; c <= colCount; c++) {
+    const lx = padding + c * colW
+    verticalLines.push([lx, tableTop, lx, tableTop + rows.length * rowH])
+  }
+
+  const horizontalLines: number[][] = []
+  for (let r = 0; r <= rows.length; r++) {
+    const ly = tableTop + r * rowH
+    horizontalLines.push([padding, ly, padding + tableW, ly])
+  }
 
   return (
     <Group
@@ -80,42 +96,44 @@ export function TechnicalDescriptionElementRenderer({ element, scale, onTransfor
         />
       )}
 
-      {Array.from({ length: columns }, (_, col) => {
-        const colItems = items.slice(col * itemsPerColumn, (col + 1) * itemsPerColumn)
-        const colX = padding + col * (columnWidth + columnGap)
-        return (
-          <Group key={col}>
-            {colItems.map((item, i) => (
-              <Group key={i} y={titleH + padding + i * rowH}>
-                <Text
-                  x={colX}
-                  y={0}
-                  text={item.label}
-                  fontSize={config.fontSize}
-                  fontFamily={config.fontFamily}
-                  fontStyle="bold"
-                  fill={config.labelColor}
-                  width={labelWidth}
-                />
-                <Text
-                  x={colX + labelWidth + 2}
-                  y={0}
-                  text={item.value}
-                  fontSize={config.fontSize}
-                  fontFamily={config.fontFamily}
-                  fill={config.valueColor}
-                />
-              </Group>
-            ))}
-          </Group>
-        )
-      })}
+      {paddedRows.map((row, r) =>
+        row.map((cell, c) => (
+          <Text
+            key={`${r}-${c}`}
+            x={padding + c * colW + 4}
+            y={tableTop + r * rowH + (rowH - config.fontSize) / 2}
+            text={cell}
+            fontSize={config.fontSize}
+            fontFamily={config.fontFamily}
+            fill={config.fontColor}
+            width={Math.max(0, colW - 8)}
+          />
+        )),
+      )}
 
-      {visibleItems.length === 0 && (
+      {verticalLines.map((pts, i) => (
+        <Line
+          key={`v-${i}`}
+          points={pts}
+          stroke={config.borderColor}
+          strokeWidth={config.borderWidth}
+        />
+      ))}
+
+      {horizontalLines.map((pts, i) => (
+        <Line
+          key={`h-${i}`}
+          points={pts}
+          stroke={config.borderColor}
+          strokeWidth={config.borderWidth}
+        />
+      ))}
+
+      {rows.length === 0 && (
         <Text
           x={padding}
-          y={titleH + padding}
-          text="No items"
+          y={tableTop + padding}
+          text="No data"
           fontSize={config.fontSize}
           fontFamily={config.fontFamily}
           fill="#a1a1aa"

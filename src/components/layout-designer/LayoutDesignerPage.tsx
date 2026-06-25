@@ -3,6 +3,7 @@ import { LayoutCanvas } from './LayoutCanvas'
 import { LayoutToolbar } from './LayoutToolbar'
 import { ElementsList } from './ElementsList'
 import { PropertiesPanel } from './PropertiesPanel'
+import { TechnicalDescriptionDataPanel } from './TechnicalDescriptionDataPanel'
 import { PageSetupBar } from './PageSetupBar'
 import { ExportDialog } from './ExportDialog'
 import { Button } from '@/components/shared/ui/Button'
@@ -78,6 +79,8 @@ export function LayoutDesignerPage() {
         </div>
 
         {panelOpen && <PropertiesPanel />}
+
+        <TechnicalDescriptionDataPanel />
       </div>
 
       {showExport && (

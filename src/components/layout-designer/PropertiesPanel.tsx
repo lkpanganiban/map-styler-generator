@@ -1,11 +1,10 @@
 import { useLayoutStore } from '@/store/useLayoutStore'
-import type { TechnicalDescriptionItem } from '@/types/layout'
 import { Input } from '@/components/shared/ui/Input'
 import { Select } from '@/components/shared/ui/Select'
 import { ColorInput } from '@/components/shared/ui/ColorInput'
 import { Button } from '@/components/shared/ui/Button'
 import { northArrowNames } from '@/lib/icons/northArrows'
-import { Trash2, Plus, Eye, EyeOff } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 
 export function PropertiesPanel() {
   const { elements, selectedId, updateElement, removeElement, pageConfig, setPageConfig } =
@@ -307,18 +306,6 @@ export function PropertiesPanel() {
                 } as any)
               }
             />
-            <Input
-              label="Columns"
-              type="number"
-              value={el.config.columns}
-              onChange={(e) =>
-                updateElement(selected.id, {
-                  config: { ...el.config, columns: Math.max(1, Math.min(3, Number(e.target.value) || 1)) },
-                } as any)
-              }
-              min={1}
-              max={3}
-            />
             <Select
               label="Font"
               options={[
@@ -344,7 +331,7 @@ export function PropertiesPanel() {
               }
             />
             <ColorInput
-              label="Title color"
+              label="Text color"
               value={el.config.fontColor}
               onChange={(v) =>
                 updateElement(selected.id, {
@@ -353,99 +340,29 @@ export function PropertiesPanel() {
               }
             />
             <ColorInput
-              label="Label color"
-              value={el.config.labelColor}
+              label="Border color"
+              value={el.config.borderColor}
               onChange={(v) =>
                 updateElement(selected.id, {
-                  config: { ...el.config, labelColor: v },
+                  config: { ...el.config, borderColor: v },
                 } as any)
               }
             />
-            <ColorInput
-              label="Value color"
-              value={el.config.valueColor}
-              onChange={(v) =>
+            <Input
+              label="Border width"
+              type="number"
+              value={el.config.borderWidth}
+              onChange={(e) =>
                 updateElement(selected.id, {
-                  config: { ...el.config, valueColor: v },
+                  config: { ...el.config, borderWidth: Math.max(0, Number(e.target.value) || 0) },
                 } as any)
               }
+              step={0.1}
+              min={0}
             />
-            <hr className="border-zinc-200" />
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-600">Items</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const items = [...el.config.items, { label: '', value: '', visible: true }]
-                  updateElement(selected.id, {
-                    config: { ...el.config, items },
-                  } as any)
-                }}
-              >
-                <Plus className="w-3 h-3" /> Add
-              </Button>
-            </div>
-            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-              {el.config.items.map((item: TechnicalDescriptionItem, i: number) => (
-                <div key={i} className="flex items-center gap-1.5 border border-zinc-200 rounded-md p-1.5">
-                  <button
-                    onClick={() => {
-                      const items = el.config.items.map((it: TechnicalDescriptionItem, idx: number) =>
-                        idx === i ? { ...it, visible: !it.visible } : it,
-                      )
-                      updateElement(selected.id, {
-                        config: { ...el.config, items },
-                      } as any)
-                    }}
-                    className="text-zinc-400 hover:text-zinc-600 shrink-0"
-                    title={item.visible ? 'Hide' : 'Show'}
-                  >
-                    {item.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                  </button>
-                  <div className="flex flex-col gap-1 flex-1">
-                    <input
-                      placeholder="Label"
-                      value={item.label}
-                      onChange={(e) => {
-                        const items = el.config.items.map((it: TechnicalDescriptionItem, idx: number) =>
-                          idx === i ? { ...it, label: e.target.value } : it,
-                        )
-                        updateElement(selected.id, {
-                          config: { ...el.config, items },
-                        } as any)
-                      }}
-                      className="h-6 rounded border border-zinc-300 bg-white px-1.5 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
-                    />
-                    <input
-                      placeholder="Value"
-                      value={item.value}
-                      onChange={(e) => {
-                        const items = el.config.items.map((it: TechnicalDescriptionItem, idx: number) =>
-                          idx === i ? { ...it, value: e.target.value } : it,
-                        )
-                        updateElement(selected.id, {
-                          config: { ...el.config, items },
-                        } as any)
-                      }}
-                      className="h-6 rounded border border-zinc-300 bg-white px-1.5 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
-                    />
-                  </div>
-                  <button
-                    onClick={() => {
-                      const items = el.config.items.filter((_: TechnicalDescriptionItem, idx: number) => idx !== i)
-                      updateElement(selected.id, {
-                        config: { ...el.config, items },
-                      } as any)
-                    }}
-                    className="text-zinc-400 hover:text-red-500 shrink-0"
-                    title="Remove item"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <p className="text-xs text-zinc-500">
+              Edit table data in the data panel on the right.
+            </p>
           </div>
         )
       default:

@@ -256,13 +256,12 @@ export function createTechnicalDescription(): TechnicalDescriptionElement {
       fontFamily: 'Inter, sans-serif',
       fontSize: 10,
       fontColor: '#18181b',
-      labelColor: '#52525b',
-      valueColor: '#18181b',
-      columns: 1,
-      items: [
-        { label: 'CRS', value: 'WGS 84 / Pseudo-Mercator', visible: true },
-        { label: 'Scale', value: '1:50,000', visible: true },
-        { label: 'Date', value: new Date().toISOString().slice(0, 10), visible: true },
+      borderColor: '#d4d4d8',
+      borderWidth: 0.5,
+      rows: [
+        ['CRS', 'WGS 84 / Pseudo-Mercator'],
+        ['Scale', '1:50,000'],
+        ['Date', new Date().toISOString().slice(0, 10)],
       ],
     },
   }
