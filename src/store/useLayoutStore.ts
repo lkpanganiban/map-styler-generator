@@ -117,6 +117,17 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
 
   setElements: (elements) => set({ elements }),
 
+  loadTemplate: (pageConfig, elements) => {
+    const snap = snapshot(get())
+    set({
+      pageConfig,
+      elements,
+      selectedId: null,
+      undoStack: [...get().undoStack, snap],
+      redoStack: [],
+    })
+  },
+
   getMapFrame: () => {
     return get().elements.find((el): el is MapFrameElement => el.kind === 'mapframe')
   },

@@ -158,6 +158,7 @@ export interface LayoutState {
   undo: () => void
   redo: () => void
   setElements: (elements: LayoutElement[]) => void
+  loadTemplate: (pageConfig: PageConfig, elements: LayoutElement[]) => void
   getMapFrame: () => MapFrameElement | undefined
 }
 
