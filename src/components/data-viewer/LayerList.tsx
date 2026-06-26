@@ -2,8 +2,31 @@ import { useLayersStore } from '@/store/useLayersStore'
 import { getMapInstance, getOlLayerByGisId } from '@/lib/mapRef'
 import { Eye, EyeOff, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Style, Fill, Stroke, Circle as CircleStyle } from 'ol/style'
+
+function ColorSwatch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="w-4 h-4 rounded border border-zinc-300 shrink-0 shadow-sm"
+        style={{ backgroundColor: value }}
+        aria-label="Choose color"
+      />
+      <input
+        ref={inputRef}
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="sr-only"
+      />
+    </>
+  )
+}
 
 export function LayerList() {
   const { layers, toggleVisibility, removeLayer, setOpacity, setVectorStyle } = useLayersStore()
@@ -143,33 +166,30 @@ export function LayerList() {
                   {(layer.type === 'vector' || layer.type === 'wfs') && expandedId === layer.id && (
                     <div className="space-y-1.5 pt-1 border-t border-zinc-200">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-zinc-400 w-8 shrink-0">Fill</span>
-                        <input
-                          type="color"
+                        <ColorSwatch
                           value={(layer as any).style.fillColor}
-                          onChange={(e) => handleColorChange(layer.id, 'fillColor', e.target.value)}
-                          className="w-6 h-5 rounded border border-zinc-300 cursor-pointer p-0"
+                          onChange={(value) => handleColorChange(layer.id, 'fillColor', value)}
                         />
+                        <span className="text-[10px] text-zinc-400 w-8 shrink-0">Fill</span>
                         <input
                           type="text"
                           value={(layer as any).style.fillColor}
                           onChange={(e) => handleColorChange(layer.id, 'fillColor', e.target.value)}
-                          className="flex-1 h-5 rounded border border-zinc-300 px-1.5 text-[10px]"
+                          className="flex-1 h-8 rounded border border-zinc-300 px-1.5 text-[10px]"
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-zinc-400 w-8 shrink-0">Stroke</span>
-                        <input
-                          type="color"
+                        <ColorSwatch
                           value={(layer as any).style.strokeColor}
-                          onChange={(e) => handleColorChange(layer.id, 'strokeColor', e.target.value)}
-                          className="w-6 h-5 rounded border border-zinc-300 cursor-pointer p-0"
+                          onChange={(value) => handleColorChange(layer.id, 'strokeColor', value)}
                         />
+                        <span className="text-[10px] text-zinc-400 w-8 shrink-0">Stroke</span>
+
                         <input
                           type="text"
                           value={(layer as any).style.strokeColor}
                           onChange={(e) => handleColorChange(layer.id, 'strokeColor', e.target.value)}
-                          className="flex-1 h-5 rounded border border-zinc-300 px-1.5 text-[10px]"
+                          className="flex-1 h-8 rounded border border-zinc-300 px-1.5 text-[10px]"
                         />
                       </div>
                     </div>
