@@ -15,8 +15,25 @@ import type {
 import { PAPER_SIZES_MM, getPageDimensions } from '@/types/layout'
 
 let nextElementId = 1
+
+function syncNextElementId(elements: LayoutElement[]) {
+  let max = 0
+  for (const el of elements) {
+    const match = /^elem-(\d+)$/.exec(el.id)
+    if (match) {
+      max = Math.max(max, Number(match[1]))
+    }
+  }
+  nextElementId = Math.max(nextElementId, max + 1)
+}
+
 function makeElementId(): string {
-  return `elem-${nextElementId++}`
+  const existingIds = new Set(useLayoutStore.getState().elements.map((el) => el.id))
+  let id = `elem-${nextElementId++}`
+  while (existingIds.has(id)) {
+    id = `elem-${nextElementId++}`
+  }
+  return id
 }
 
 const DEFAULT_PAGE: PageConfig = {
@@ -115,9 +132,13 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     })
   },
 
-  setElements: (elements) => set({ elements }),
+  setElements: (elements) => {
+    syncNextElementId(elements)
+    set({ elements })
+  },
 
   loadTemplate: (pageConfig, elements) => {
+    syncNextElementId(elements)
     const snap = snapshot(get())
     set({
       pageConfig,

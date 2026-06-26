@@ -20,7 +20,22 @@ export function TechnicalDescriptionDataPanel() {
       el.id === selectedId && el.kind === 'techdesc',
   )
 
-  if (!element) return null
+  if (!element) {
+    return (
+      <div className="w-80 shrink-0 bg-white border-l border-zinc-200 flex flex-col min-w-0">
+        <div className="px-4 py-3 border-b border-zinc-200 shrink-0">
+          <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">
+            Technical Description Data
+          </h3>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <p className="text-xs text-zinc-400 text-center">
+            Select a technical description element to edit its data.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   const { config } = element
   const rows = config.rows.length > 0 ? config.rows : [[]]

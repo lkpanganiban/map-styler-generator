@@ -20,10 +20,12 @@ export function ExportMapButton({ olMap }: ExportMapButtonProps) {
     const combinedExtent = getCombinedVisibleExtent()
     const extent = combinedExtent || olMap.getView().calculateExtent(olMap.getSize())
 
-    useLayoutStore.getState().setElements([])
-    useLayoutStore.getState().redoStack = []
-    useLayoutStore.getState().undoStack = []
-    useLayoutStore.getState().selectedId = null
+    useLayoutStore.setState({
+      elements: [],
+      redoStack: [],
+      undoStack: [],
+      selectedId: null,
+    })
 
     const mapFrame = createMapFrame(extent as unknown as [number, number, number, number])
     useLayoutStore.getState().addElement(mapFrame)
